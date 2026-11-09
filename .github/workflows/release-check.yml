@@ -4,6 +4,8 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -23,6 +25,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Require release tag to match package version
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          version = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+          expected_tag = f"v{version}"
+          actual_tag = os.environ["RELEASE_TAG"]
+          if actual_tag != expected_tag:
+              raise SystemExit(f"Release tag {actual_tag!r} must be {expected_tag!r} to match pyproject.toml.")
+          print(f"Release tag matches package version: {actual_tag}")
+          PY
       - run: npm ci
       - run: npm run build
       - name: Require current committed frontend assets
@@ -41,3 +61,26 @@ jobs:
         with:
           name: distributions-${{ matrix.os }}
           path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish to PyPI
+    needs: distribution
+    if: github.event_name == 'release' && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/embedgl/
+    concurrency:
+      group: pypi-publish
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: distributions-ubuntu-latest
+          path: dist/
+      - name: Publish validated distributions
+        uses: pypa/gh-action-pypi-publish@release/v1

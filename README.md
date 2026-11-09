@@ -156,7 +156,27 @@ Start with an empty `dist` directory so old releases are not mixed with the new 
 
 The release-check workflow runs on Linux and Windows, builds the wheel from the source distribution, and runs tests against that wheel outside the checkout. Before uploading, also render `embedgl.demo.make_demo()` in a real JupyterLab notebook and check 2D/3D views, picking, image previews, and selection. Automated Python checks do not verify browser rendering or performance.
 
-After the checks pass, upload only the validated distributions with `uv run python -m twine upload dist/*`. Authenticate through your usual secure PyPI workflow; never commit credentials. No workflow in this repository automatically publishes to PyPI.
+### Publish From GitHub
+
+Publishing a non-prerelease GitHub release runs the release-check workflow against the tagged commit. Both Linux and Windows must pass before a separate job uploads the validated Linux-built wheel and source distribution to PyPI. Pushes, pull requests, manual workflow runs, tag pushes alone, draft releases, and releases marked as prereleases do not publish to PyPI. Authentication uses PyPI Trusted Publishing (OIDC); no PyPI API token or GitHub secret is needed.
+
+One-time setup (repository `M-Anwar/embedgl`):
+
+1. In GitHub, open **Settings > Environments > New environment** and create `pypi`. Under its deployment branch/tag rules, select **Selected branches and tags** and add a **tag** rule matching `v*`. Optionally add required reviewers if your repository plan supports them; each upload will then wait for approval.
+2. Log in to PyPI with two-factor authentication enabled. For an existing `embedgl` project you own, open **Manage > Publishing > Add a new publisher**. For a first upload, use [PyPI's pending publisher form](https://pypi.org/manage/account/publishing/) and set the project name to `embedgl`. A pending publisher does not reserve a name; if someone else owns it, you need ownership or a different package name.
+3. Choose GitHub and enter these exact values: owner `M-Anwar`, repository `embedgl`, workflow filename `release-check.yml` (not its path or display name), and environment `pypi`.
+4. Commit and push the workflow and release changes. Keep the workflow on the default branch and on any branch you plan to release. Ensure GitHub Actions is enabled for the repository.
+
+For each release:
+
+1. Set a new, unused `[project].version` in `pyproject.toml`, rebuild and commit frontend assets if they changed, and push the release-ready commit to your chosen branch. Run the release checks and notebook smoke test above.
+2. In GitHub, open **Releases > Draft a new release**. Under **Choose a tag**, enter `v` followed by the exact project version, such as `v1.0` for version `1.0`. Create the new tag on publish and select your release branch in **Target**. When selecting an existing tag, its commit is used regardless of the current branch tip.
+3. Add a title and release notes, leave **Set as a pre-release** unchecked, and click **Publish release**. The workflow rejects tags that do not exactly match the version in the tagged commit; it does not change the version automatically.
+4. Follow **Actions > Release checks**. Approve the `pypi` deployment if required, then verify the new version on [PyPI](https://pypi.org/project/embedgl/).
+
+PyPI does not allow overwriting a published version or reusing deleted distribution filenames. For a corrected release, increment the version and create a new tag/release; do not move an old release tag. A failed run before uploading can be rerun after fixing external setup, but an upload that already succeeded must not be repeated. The workflow deliberately does not ignore existing files.
+
+Manual publishing remains available with `uv run python -m twine upload dist/*` after local validation. Authenticate through your usual secure PyPI workflow; never commit credentials.
 
 ## Data Flow and Limitations
 
