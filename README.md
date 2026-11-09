@@ -12,7 +12,7 @@ Install into the same environment as your notebook kernel:
 pip install embedgl
 ```
 
-For a local checkout, run `pip install -e .` from the repository root. Python 3.12 or newer is required.
+For a local checkout, run `pip install -e .` from the repository root. Python 3.11 or newer is required.
 
 The built JavaScript/CSS assets are included under `embedgl/static` in the installed package. Normal notebook use needs neither Node.js nor a frontend server. No separate custom JupyterLab extension is required; the notebook must support ipywidgets/anywidget and WebGL. In JupyterLab, install `jupyterlab_widgets` in the JupyterLab server environment if it is separate from the kernel environment.
 

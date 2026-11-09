@@ -15,6 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +25,7 @@ jobs:
           cache: npm
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
       - name: Require release tag to match package version
         if: github.event_name == 'release'
         env:
@@ -59,7 +60,7 @@ jobs:
           python -m unittest discover -s "$GITHUB_WORKSPACE/tests" -v
       - uses: actions/upload-artifact@v4
         with:
-          name: distributions-${{ matrix.os }}
+          name: distributions-${{ matrix.os }}-py${{ matrix.python-version }}
           path: dist/*
           if-no-files-found: error
 
@@ -80,7 +81,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: distributions-ubuntu-latest
+          name: distributions-ubuntu-latest-py3.12
           path: dist/
       - name: Publish validated distributions
         uses: pypa/gh-action-pypi-publish@release/v1
