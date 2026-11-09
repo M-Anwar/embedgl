@@ -1,0 +1,9 @@
+node_modules/
+__pycache__/
+.vite/
+.venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/

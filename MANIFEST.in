@@ -1,0 +1,9 @@
+include src/build_support.py
+include package.json package-lock.json tsconfig.json vite.config.ts
+include src/embedgl/THIRD_PARTY_LICENSES.txt
+recursive-include src/embedgl/static *.js *.css
+recursive-include frontend *.ts *.tsx *.css
+recursive-include scripts *.py *.mjs
+recursive-include tests *.py
+recursive-include examples *.ipynb
+global-exclude __pycache__ *.py[cod]

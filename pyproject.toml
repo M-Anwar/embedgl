@@ -1,0 +1,120 @@
+[project]
+name = "embedgl"
+description = "JupyterLab widget for visualizing embeddings"
+version = "1.0"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+dependencies = [
+    "Pillow>=10.1",
+    "numpy",
+    "polars>=2.1,<3",
+    "anywidget>=0.9.18",
+    "traitlets>=5.9",
+]
+
+classifiers = [
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+
+[project.urls]
+Repository = "https://github.com/M-Anwar/embedgl"
+Issues = "https://github.com/M-Anwar/embedgl/issues"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29",
+    "build>=1.2",
+    "setuptools>=77",
+    "twine>=6.1",
+    "watchfiles>=1.3.0",
+]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["embedgl*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+embedgl = ["static/*.js", "static/*.css", "THIRD_PARTY_LICENSES.txt"]
+
+[tool.setuptools.cmdclass]
+build_py = "build_support.CheckedBuildPy"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+exclude = ["**/node_modules", "**/__pycache__", "**/.*", "build"]
+strictListInference = true
+strictDictionaryInference = true
+strictParameterNoneValue = true
+reportTypedDictNotRequiredAccess = false
+reportIncompatibleVariableOverride = true
+reportIncompatibleMethodOverride = true
+reportMatchNotExhaustive = true
+reportUnnecessaryTypeIgnoreComment = true
+
+[tool.ruff]
+line-length = 120
+# first-party imports for sorting
+src = ["src"]
+fix = true
+show-fixes = true
+
+[tool.ruff.lint]
+# rules to enable/ignore
+select = [
+    "F",     # pyflakes
+    "E",     # pycodestyle
+    "W",     # pycodestyle
+    "ANN",   # type annotations
+    "N",     # pep8-naming
+    "B",     # bugbear
+    "I",     # isort
+    "ARG",   # flake8-unused-arguments
+    "SLF",   # flake8-self
+    "UP",    # pyupgrade
+    "PERF",  # perflint
+    "RUF",   # ruff-specific
+    "SIM",   # flake8-simplify
+    "S113",  # request-without-timeout
+    "ASYNC", # flake8-async
+]
+
+ignore = [
+    # allow no return type from dunder methods
+    "ANN204",
+    # allow == True because pandas dataframes overload equality
+    "E712",
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-wrap-aliases = true
+
+[tool.ruff.lint.per-file-ignores]
+# test functions don't need return types
+"tests/*" = ["ANN201", "ANN202", "SLF001"]
+
+[tool.ruff.lint.flake8-annotations]
+# allow *args: Any, **kwargs: Any
+allow-star-arg-any = true
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: test that calls another service",
+    "smoke: test for after deploys",
+]
